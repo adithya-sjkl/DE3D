@@ -135,7 +135,7 @@ class DE3D(nn.Module):
 
     def forward(self, x:Tensor):
 
-        print(x.shape)
+        
 
         x_1 = x.clone()
         x_2 = x.clone()
@@ -159,7 +159,7 @@ de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
 #output = de3d(image_tensor)
 
-print(summary(de3d,(224,224,224)))
+#print(summary(de3d,(224,224,224)))
 
 
 
