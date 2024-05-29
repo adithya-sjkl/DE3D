@@ -68,7 +68,7 @@ convLSTM = ConvLSTMCell(16)
 
 # Hyperparameters
 int_channels = 10
-batch_size = 2
+batch_size = 1
 
 class features_2D(nn.Module):
     def __init__ (self, channels, batch_size):
@@ -126,14 +126,14 @@ class DE3D(nn.Module):
         self.feat_saggital = feat_2D_convlstm(channels=int_channels,batch_size=batch_size)
         self.fully_connected = nn.Linear(in_features=1200,out_features=1)
         self.feat_res = feat_res
+        self.c_1 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
+        self.c_2 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
+        self.c_3 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
+        self.h_1 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
+        self.h_2 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
+        self.h_3 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
 
     def forward(self, x:Tensor):
-        c_1 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
-        c_2 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
-        c_3 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
-        h_1 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
-        h_2 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
-        h_3 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
 
         print(x.shape)
 
@@ -144,9 +144,9 @@ class DE3D(nn.Module):
         x_2 = einops.rearrange(x_1, 'b h w l -> b w h l')
         x_3 = einops.rearrange(x_1, 'b h w l -> b l w h')
 
-        out_axial = self.feat_axial(x_1,c_1,h_1)
-        out_saggital = self.feat_saggital(x_2,c_2,h_2)
-        out_coronal = self.feat_coronal(x_3,c_3,h_3)
+        out_axial = self.feat_axial(x_1, self.c_1, self.h_1)
+        out_saggital = self.feat_saggital(x_2, self.c_2, self.h_2)
+        out_coronal = self.feat_coronal(x_3, self.c_3, self.h_3)
 
         out = torch.cat([out_axial,out_saggital,out_coronal],dim=1)
         out = self.fully_connected(out)
@@ -154,11 +154,12 @@ class DE3D(nn.Module):
 
 
 
-image_tensor = torch.randn(2,224,224,224)
+#image_tensor = torch.randn(2,224,224,224)
 de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
-output = de3d(image_tensor)
+#output = de3d(image_tensor)
 
-#print(summary(de3d,(2,224,224,224)))
-#git trial
+print(summary(de3d,(224,224,224)))
+
+
 
