@@ -130,12 +130,12 @@ class DE3D(nn.Module):
 
     def forward(self, x:Tensor):
 
-        x_1 = x.clone()
-        x_2 = x.clone()
-        x_3 = x.clone()
+        x_1 = x
+        x_2 = x_1.clone()
+        x_3 = x_1.clone()
 
-        x_2 = einops.rearrange(x_1, 'b h w l -> b w h l')
-        x_3 = einops.rearrange(x_1, 'b h w l -> b l w h')
+        x_2 = einops.rearrange(x_2, 'b h w l -> b w h l')
+        x_3 = einops.rearrange(x_3, 'b h w l -> b l w h')
 
         out_axial = self.features(x_1)
         out_saggital = self.features(x_2)
