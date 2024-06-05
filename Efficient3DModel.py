@@ -20,7 +20,7 @@ import einops
 x = torch.randn(5,1,224,224)
 
 feat_ext = timm.create_model(
-    'tf_efficientnet_b1.ns_jft_in1k',
+    'tf_efficientnet_b0.ns_jft_in1k',
     #'resnet18',
     pretrained=True,
     features_only=True,
@@ -88,7 +88,6 @@ class features_2D(nn.Module):
         return x
 
 
-
 class feat_2D_convlstm(nn.Module):
     def __init__(self, channels:int, batch_size:int):
         super(feat_2D_convlstm, self).__init__()
@@ -134,8 +133,6 @@ class DE3D(nn.Module):
         self.h_3 = torch.zeros(self.batch_size,self.channels,self.feat_res,self.feat_res)
 
     def forward(self, x:Tensor):
-
-        
 
         x_1 = x.clone()
         x_2 = x.clone()
