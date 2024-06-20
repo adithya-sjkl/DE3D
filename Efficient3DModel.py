@@ -116,7 +116,6 @@ class feat_2D_convlstm(nn.Module):
         x = einops.rearrange(x,'b c w l -> b (c w l)')
         return x
 
-featbox = feat_2D_convlstm(channels=int_channels,batch_size=batch_size)
 
 class DE3D(nn.Module):
     def __init__(self, channels:int, batch_size:int, feat_res):
@@ -149,6 +148,8 @@ class DE3D(nn.Module):
 
 #image_tensor = torch.randn(2,224,224,224)
 de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
+
+
 
 #output = de3d(image_tensor)
 
