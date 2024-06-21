@@ -12,7 +12,7 @@ self.feat_axial = feat2D_convlstm(channels,batch,self.c,self.h)
 -----------
 
 feat2D_convlstm:
-__inti__(channels,batch,c,h):
+__init__(channels,batch,c,h):
 self.c = c
 self.h = h
 
