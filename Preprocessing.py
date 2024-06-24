@@ -1,25 +1,90 @@
-import numpy as np
-import pandas as pd
-import torch
-import torchvision
-import monai
+import os
 from glob import glob
+import numpy as np
+import monai
+import nibabel
 from monai.transforms import (
     Compose,
-    EnsureChannelFirstD,
-    LoadImaged,
-    Resized,
-    ToTensord,
-    Spacingd,
-    Orientationd,
-    ScaleIntensityRanged,
-    CropForegroundd,
+    EnsureChannelFirst,
+    LoadImage,
+    Resize,
+    ToTensor,
+    Spacing,
+    Orientation,
+    ScaleIntensityRange,
+    CropForeground,
+    RandFlip,
+    RandRotate,
 
 )
 from monai.data import DataLoader, Dataset, CacheDataset
 from monai.utils import set_determinism
-import os
 
 path = "/Users/adithyasjith/Documents/Code/DE3D/Data"
 
-#testing
+class NiftiClassificationDataset(Dataset):
+    def __init__(self, image_folder_disease, image_folder_healthy, transform=None):
+        self.image_folder_disease = image_folder_disease
+        self.image_folder_healthy = image_folder_healthy
+        self.transform = transform
+
+        # List all NIfTI files
+        self.disease_files = [glob(os.path.join(image_folder_disease, "*.nii.gz"))]
+        self.healthy_files = [glob(os.path.join(image_folder_healthy, "*.nii.gz"))]
+        self.total_files = self.disease_files + self.healthy_files
+        self.labels = np.array([1] * len(self.disease_files) + [0] * len(self.healthy_files), dtype=np.int64)
+
+    def __len__(self):
+        return len(self.total_files)
+
+    def __getitem__(self, index):
+        image_file = self.total_files[index]
+        label = self.labels[index]
+
+        # Load NIfTI image
+        image = monai.data.NibabelReader(image_file)
+
+        # Apply transformations if provided
+        if self.transform is not None:
+            image = self.transform(image)
+
+        return image, label
+
+def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=200, spatial_size=[224,224,224], batch_size=1):
+    """
+    This function is for preprocessing, it contains only the basic transforms, but you can add more operations that you
+    find in the Monai documentation.
+    https://monai.io/docs.html
+    """
+
+    set_determinism(seed=0)
+
+    train_transforms = Compose(
+        [
+            LoadImage(),
+            EnsureChannelFirst(),
+            Spacing(pixdim=pixdim, mode=("bilinear")),
+            Orientation(axcodes="RAS"),
+            ScaleIntensityRange(a_min=a_min, a_max=a_max, b_min=0.0, b_max=1.0, clip=True),
+            CropForeground(),
+            Resize(spatial_size=spatial_size),
+            RandFlip(spatial_axis=0, prob=0.5),
+            RandRotate(range_x=15, range_y=15, range_z=15, prob=0.5),
+            ToTensor(),
+
+        ]
+    )
+
+    dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms)
+
+    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.7, 0.15, 0.15])
+
+    # Create DataLoader instances
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+
+    return train_loader, val_loader, test_loader
+
+prepare(healthy_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/NC",
+        disease_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/AD")
