@@ -23,7 +23,7 @@ from monai.utils import set_determinism
 path = "/Users/adithyasjith/Documents/Code/DE3D/Data"
 
 class NiftiClassificationDataset(Dataset):
-    def __init__(self, image_folder_disease, image_folder_healthy, transform=None):
+    def __init__(self, image_folder_disease, image_folder_healthy, transform):
         self.image_folder_disease = image_folder_disease
         self.image_folder_healthy = image_folder_healthy
         self.transform = transform
@@ -42,11 +42,7 @@ class NiftiClassificationDataset(Dataset):
         label = self.labels[index]
 
         # Load NIfTI image
-        image = monai.data.NibabelReader(image_file)
-
-        # Apply transformations if provided
-        if self.transform is not None:
-            image = self.transform(image)
+        image = self.transform(image_file)
 
         return image, label
 
