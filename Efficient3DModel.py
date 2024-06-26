@@ -11,7 +11,6 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from torch import optim
 import timm
-from torchsummary import summary
 from transformers import AutoModel, AutoTokenizer
 from torch.functional import Tensor
 import typing
@@ -129,22 +128,24 @@ class DE3D(nn.Module):
 
     def forward(self, x:Tensor):
 
-        x_1 = x
-        x_2 = x_1.clone()
-        x_3 = x_1.clone()
+        #x_1 = x
+        #x_2 = x_1.clone()
+        #x_3 = x_1.clone()
 
-        x_2 = einops.rearrange(x_2, 'b h w l -> b w h l')
-        x_3 = einops.rearrange(x_3, 'b h w l -> b l w h')
+        #x_2 = einops.rearrange(x_2, 'b h w l -> b w h l')
+        #x_3 = einops.rearrange(x_3, 'b h w l -> b l w h')
 
-        out_axial = self.features(x_1)
-        out_saggital = self.features(x_2)
-        out_coronal = self.features(x_3)
+        out_axial = self.features(x)
+        #out_saggital = self.features(x_2)
+        #out_coronal = self.features(x_3)
 
-        out = torch.cat([out_axial,out_saggital,out_coronal],dim=1)
-        out = self.fully_connected(out)
+        #out = torch.cat([out_axial,out_saggital,out_coronal],dim=1)
+        out = self.fully_connected(out_axial)
+
+        return out
 
 
-
+torch.cuda.memory.__record_memory_history()
 
 image_tensor = torch.randn(1,224,224,224)
 de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
@@ -152,8 +153,11 @@ de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
 
 output = de3d(image_tensor)
+print(output)
 
-#print(summary(de3d,(224,224,224)))
+torch.cuda.memory.__dump_snapshot("Memory report")
+
+torch.cuda.memory.__record_memory_history(enabled=None)
 
 
 
