@@ -63,7 +63,7 @@ class ConvLSTMCell(nn.Module):
         h = b * torch.tanh(c)
         return c, h
 
-convLSTM = ConvLSTMCell(16)
+
 
 
 # Hyperparameters
@@ -146,12 +146,12 @@ class DE3D(nn.Module):
 
 
 
-#image_tensor = torch.randn(2,224,224,224)
+image_tensor = torch.randn(1,224,224,224)
 de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
 
 
-#output = de3d(image_tensor)
+output = de3d(image_tensor)
 
 #print(summary(de3d,(224,224,224)))
 
