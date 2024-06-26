@@ -145,7 +145,7 @@ class DE3D(nn.Module):
         return out
 
 
-torch.cuda.memory.__record_memory_history()
+torch.cuda.memory._record_memory_history()
 
 image_tensor = torch.randn(1,224,224,224)
 de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
@@ -155,9 +155,9 @@ de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 output = de3d(image_tensor)
 print(output)
 
-torch.cuda.memory.__dump_snapshot("Memory report")
+torch.cuda.memory._dump_snapshot("Memory report")
 
-torch.cuda.memory.__record_memory_history(enabled=None)
+torch.cuda.memory._record_memory_history(enabled=None)
 
 
 
