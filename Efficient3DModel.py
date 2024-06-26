@@ -15,6 +15,7 @@ from transformers import AutoModel, AutoTokenizer
 from torch.functional import Tensor
 import typing
 import einops
+from pickle import dump
 
 x = torch.randn(5,1,224,224)
 
@@ -155,7 +156,9 @@ de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 output = de3d(image_tensor)
 print(output)
 
-torch.cuda.memory._dump_snapshot("Memory report")
+snapshot = torch.cuda.memory._snapshot()
+dump(snapshot, open('snapshot.pickle', 'wb'))
+#torch.cuda.memory._dump_snapshot("Memory report")
 
 torch.cuda.memory._record_memory_history(enabled=None)
 
