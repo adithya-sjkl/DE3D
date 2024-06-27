@@ -17,7 +17,14 @@ from torch.functional import Tensor
 import typing
 import einops
 
-x = torch.randn(5,1,224,224)
+
+def oom_observer(device, alloc, device_alloc, device_free):
+    # snapshot right after an OOM happened
+    print('saving allocated state during OOM')
+    snapshot = torch.cuda.memory._snapshot()
+    dump(snapshot, open('oom_snapshot.pickle', 'wb'))
+
+torch._C._cuda_attach_out_of_memory_observer(oom_observer)
 
 feat_ext = timm.create_model(
     'tf_efficientnet_b0.ns_jft_in1k',
@@ -152,7 +159,7 @@ de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
 
 output = de3d(image_tensor)
-
+print(output)
 #print(summary(de3d,(224,224,224)))
 
 
