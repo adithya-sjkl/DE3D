@@ -81,7 +81,7 @@ class feat_2D_convlstm(nn.Module):
         self.c = c
         self.h = h
         self.features_2D = features_2D(channels=channels,batch_size=batch_size)
-        self.convlstm = ConvLSTMCell(intermediate_channels=int_channels)
+        self.convlstm = ConvLSTMCell(intermediate_channels=channels)
         self.fconv1 = nn.Conv2d(in_channels=channels,out_channels=4,kernel_size=5)
         self.fconv2 = nn.Conv2d(in_channels=4,out_channels=1,kernel_size=5)
 
