@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
-import torch.optim as optim
 import timm
 from torch.functional import Tensor
 import typing

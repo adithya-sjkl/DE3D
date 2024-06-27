@@ -8,6 +8,7 @@ from accelerate.utils import set_seed
 from Efficient3DModel import DE3D
 from Preprocessing import prepare
 from sklearn.metrics import accuracy_score, f1_score
+import torch.optim as optim
 
 train_losses = []
 val_losses = []
