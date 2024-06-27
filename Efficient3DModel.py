@@ -116,7 +116,7 @@ class DE3D(nn.Module):
         super(DE3D, self).__init__()
         #self.channels = channels
         #self.batch_size = batch_size
-        self.fully_connected = nn.Linear(in_features=1200,out_features=1)
+        self.fully_connected = nn.Linear(in_features=1200,out_features=2)
         self.c = torch.zeros(batch_size,channels,feat_res,feat_res)
         self.h = torch.zeros(batch_size,channels,feat_res,feat_res)
         self.features = feat_2D_convlstm(channels=channels,batch_size=batch_size,c=self.c,h=self.h)
