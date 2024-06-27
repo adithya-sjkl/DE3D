@@ -11,7 +11,6 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from torch import optim
 import timm
-from torchsummary import summary
 from transformers import AutoModel, AutoTokenizer
 from torch.functional import Tensor
 import typing
