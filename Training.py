@@ -14,7 +14,7 @@ val_losses = []
 train_accuracies = []
 val_accuracies = []
 
-def training_loop(mixed_precision="fp16", seed:int=42, batch_size:int=1, num_epochs=10, healthy_dir, disease_dir, int_channels:int=10):
+def training_loop(healthy_dir, disease_dir, mixed_precision="fp16", seed:int=42, batch_size:int=1, num_epochs=10, int_channels:int=10):
     set_seed(seed)
     # Initialize accelerator
     accelerator = Accelerator(mixed_precision=mixed_precision)
