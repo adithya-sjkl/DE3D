@@ -8,7 +8,7 @@ from accelerate.utils import set_seed
 from Efficient3DModel import DE3D
 from Preprocessing import prepare
 from sklearn.metrics import accuracy_score, f1_score
-import torch.optim as optim
+
 
 train_losses = []
 val_losses = []
@@ -25,10 +25,10 @@ def training_loop(healthy_dir, disease_dir, mixed_precision="fp16", seed:int=42,
     # Build model
     model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
-    optim = optim.Adam(model.parameters())
+    optimizer = optim.Adam(model.parameters())
 
-    scheduler = torch.optim.lr_scheduler.ConstantLR(optim,last_epoch=-1)
-    model,optimizer,train_dataloader,scheduler  = accelerator.prepare(model,optim,train_dataloader,scheduler )
+    scheduler = optim.lr_scheduler.ConstantLR(optim,last_epoch=-1)
+    model,optimizer,train_dataloader,scheduler  = accelerator.prepare(model,optimizer,train_dataloader,scheduler )
 
     criterion = nn.CrossEntropyLoss()
 
