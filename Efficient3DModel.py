@@ -17,14 +17,6 @@ import typing
 import einops
 
 
-def oom_observer(device, alloc, device_alloc, device_free):
-    # snapshot right after an OOM happened
-    print('saving allocated state during OOM')
-    snapshot = torch.cuda.memory._snapshot()
-    dump(snapshot, open('oom_snapshot.pickle', 'wb'))
-
-torch._C._cuda_attach_out_of_memory_observer(oom_observer)
-
 feat_ext = timm.create_model(
     'tf_efficientnet_b0.ns_jft_in1k',
     #'resnet18',
@@ -71,10 +63,6 @@ class ConvLSTMCell(nn.Module):
 
 
 
-
-# Hyperparameters
-int_channels = 10
-batch_size = 1
 
 class features_2D(nn.Module):
     def __init__ (self, channels, batch_size):
@@ -124,14 +112,14 @@ class feat_2D_convlstm(nn.Module):
 
 
 class DE3D(nn.Module):
-    def __init__(self, channels:int, batch_size:int, feat_res):
+    def __init__(self, channels:int, batch_size:int, feat_res:int=28):
         super(DE3D, self).__init__()
         #self.channels = channels
         #self.batch_size = batch_size
         self.fully_connected = nn.Linear(in_features=1200,out_features=1)
         self.c = torch.zeros(batch_size,channels,feat_res,feat_res)
         self.h = torch.zeros(batch_size,channels,feat_res,feat_res)
-        self.features = feat_2D_convlstm(channels=int_channels,batch_size=batch_size,c=self.c,h=self.h)
+        self.features = feat_2D_convlstm(channels=channels,batch_size=batch_size,c=self.c,h=self.h)
 
     def forward(self, x:Tensor):
 
@@ -149,17 +137,11 @@ class DE3D(nn.Module):
         out = torch.cat([out_axial,out_saggital,out_coronal],dim=1)
         out = self.fully_connected(out)
 
+        return out
 
 
 
-image_tensor = torch.randn(1,224,224,224)
-de3d = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
 
-
-
-output = de3d(image_tensor)
-print(output)
-#print(summary(de3d,(224,224,224)))
 
 
 
