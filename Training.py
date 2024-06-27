@@ -27,7 +27,7 @@ def training_loop(healthy_dir, disease_dir, mixed_precision="fp16", seed:int=42,
 
     optimizer = optim.Adam(model.parameters())
 
-    scheduler = optim.lr_scheduler.ConstantLR(optim,last_epoch=-1)
+    scheduler = optim.lr_scheduler.ConstantLR(optimizer,last_epoch=-1)
     model,optimizer,train_dataloader,scheduler  = accelerator.prepare(model,optimizer,train_dataloader,scheduler )
 
     criterion = nn.CrossEntropyLoss()
