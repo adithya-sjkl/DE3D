@@ -89,11 +89,11 @@ def training_loop(mixed_precision="fp16", seed:int=42, batch_size:int=1, num_epo
     all_preds = []
     all_labels = []
     with torch.no_grad():
-    for inputs, labels in test_dataloader:
-        outputs = model(inputs).squeeze()
-        preds = (outputs > 0.5).float()
-        all_preds.extend(preds.cpu().numpy())
-        all_labels.extend(labels.cpu().numpy())
+        for inputs, labels in test_dataloader:
+            outputs = model(inputs).squeeze()
+            preds = (outputs > 0.5).float()
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
 
     test_accuracy = accuracy_score(all_labels, all_preds)
     test_f1_score = f1_score(all_labels, all_preds)
