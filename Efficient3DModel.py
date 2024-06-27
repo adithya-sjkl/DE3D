@@ -1,17 +1,8 @@
 import torch
-import transformers
-import torchvision
 import torch.nn as nn
-import torchvision.transforms as transforms
-from PIL import Image
 import matplotlib.pyplot as plt
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-from torchvision.datasets import ImageFolder
-from torchvision import transforms
-from torch import optim
 import timm
-from transformers import AutoModel, AutoTokenizer
 from torch.functional import Tensor
 import typing
 import einops
