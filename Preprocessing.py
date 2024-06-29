@@ -1,6 +1,7 @@
 import os
 from glob import glob
 import numpy as np
+import torch
 import monai
 import nibabel
 from monai.transforms import (
@@ -20,6 +21,7 @@ from monai.transforms import (
 from monai.data import DataLoader, Dataset, CacheDataset
 from monai.utils import set_determinism
 
+
 path = "/Users/adithyasjith/Documents/Code/DE3D/Data"
 
 class NiftiClassificationDataset(Dataset):
@@ -29,8 +31,8 @@ class NiftiClassificationDataset(Dataset):
         self.transform = transform
 
         # List all NIfTI files
-        self.disease_files = [glob(os.path.join(image_folder_disease, "*.nii.gz"))]
-        self.healthy_files = [glob(os.path.join(image_folder_healthy, "*.nii.gz"))]
+        self.disease_files = glob(os.path.join(image_folder_disease, "*.nii"))
+        self.healthy_files = glob(os.path.join(image_folder_healthy, "*.nii"))
         self.total_files = self.disease_files + self.healthy_files
         self.labels = np.array([1] * len(self.disease_files) + [0] * len(self.healthy_files), dtype=np.int64)
 
@@ -45,6 +47,8 @@ class NiftiClassificationDataset(Dataset):
         image = self.transform(image_file)
 
         return image, label
+
+
 
 def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=200, spatial_size=[224,224,224], batch_size=1):
     """
@@ -73,7 +77,7 @@ def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=2
 
     dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms)
 
-    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.7, 0.15, 0.15])
+    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.8, 0.1, 0.1])
 
     # Create DataLoader instances
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
@@ -82,5 +86,4 @@ def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=2
 
     return train_loader, val_loader, test_loader
 
-prepare(healthy_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/NC",
-        disease_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/AD")
+
