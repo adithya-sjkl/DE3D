@@ -20,12 +20,13 @@ from monai.transforms import (
 )
 from monai.data import DataLoader, Dataset, CacheDataset
 from monai.utils import set_determinism
+import random
 
 
 path = "/Users/adithyasjith/Documents/Code/DE3D/Data"
 
 class NiftiClassificationDataset(Dataset):
-    def __init__(self, image_folder_disease, image_folder_healthy, transform):
+    def __init__(self, image_folder_disease, image_folder_healthy, transform, seed=None):
         self.image_folder_disease = image_folder_disease
         self.image_folder_healthy = image_folder_healthy
         self.transform = transform
@@ -35,11 +36,19 @@ class NiftiClassificationDataset(Dataset):
         self.healthy_files = glob(os.path.join(image_folder_healthy, "*.nii"))
         self.total_files = self.disease_files + self.healthy_files
         self.labels = np.array([1] * len(self.disease_files) + [0] * len(self.healthy_files), dtype=np.int64)
-
+        
+        # Create a list of indices
+        self.indices = list(range(len(self.total_files)))
+        
+        # Shuffle the indices
+        if seed is not None:
+            random.seed(seed)
+        random.shuffle(self.indices)
     def __len__(self):
         return len(self.total_files)
 
     def __getitem__(self, index):
+        index = self.indices[index]
         image_file = self.total_files[index]
         label = self.labels[index]
 
@@ -47,7 +56,6 @@ class NiftiClassificationDataset(Dataset):
         image = self.transform(image_file)
 
         return image, label
-
 
 
 def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=200, spatial_size=[224,224,224], batch_size=1):
@@ -75,7 +83,7 @@ def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=2
         ]
     )
 
-    dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms)
+    dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms, seed=42)
 
     train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.8, 0.1, 0.1])
 
