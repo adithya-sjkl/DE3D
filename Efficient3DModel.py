@@ -63,8 +63,8 @@ class features_2D(nn.Module):
         self.channel_red = nn.Conv2d(in_channels=40,out_channels=channels,kernel_size=1)
         
     def forward(self, x:Tensor):
-        x = einops.rearrange(x, 'b h w l -> (b h) w l')   # we concat the images in the batch along the height
-        x = torch.unsqueeze(x, dim=1)                     #efficientnet (grayscale) needs a channel dimension of size 1
+        x = einops.rearrange(x, 'b c h w l -> (b h) c w l')   # we concat the images in the batch along the height
+        #x = torch.unsqueeze(x, dim=1)                     #efficientnet (grayscale) needs a channel dimension of size 1
         x = self.feat_ext(x)[2]                           #we choose the layer from which we extract features
         x = self.channel_red(x)                           #1x1 convs help reduce the number of channels by mixing
         x = einops.rearrange(x, '(b h) c w l -> b h c w l', b=self.batch_size) #reverse the first step
