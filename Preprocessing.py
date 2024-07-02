@@ -93,10 +93,3 @@ def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=2
     test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader
-
-train_loader,_,_ = prepare(healthy_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/NC", disease_dir="/Users/adithyasjith/Documents/Code/DE3D/Data/AD")
-
-for batch in train_loader:
-    image, label = batch
-    print(image.shape)
-    print(label)
