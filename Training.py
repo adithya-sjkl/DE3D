@@ -19,11 +19,12 @@ def training_loop(healthy_dir, disease_dir, mixed_precision="fp16", seed:int=42,
     set_seed(seed)
     # Initialize accelerator
     accelerator = Accelerator(mixed_precision=mixed_precision)
+    device = accelerator.device
     # Build dataloaders
     train_dataloader, val_dataloader, test_dataloader = prepare(healthy_dir=healthy_dir,disease_dir=disease_dir,batch_size=batch_size)
 
     # Build model
-    model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28)
+    model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28).to(device)
 
     optimizer = optim.Adam(model.parameters())
 
