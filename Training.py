@@ -1,132 +1,161 @@
 import torch
 import torch.nn as nn
-import torchvision
-from accelerate import Accelerator
-import matplotlib.pyplot as plt
 import torch.optim as optim
-from accelerate.utils import set_seed
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score,f1_score
+import numpy as np
+from torchvision.models import resnet18
+from torch import optim
+from torch.utils.data import Dataset, DataLoader
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
+import PIL
+from torch.cuda.amp import GradScaler
 from Efficient3DModel import DE3D
 from Preprocessing import prepare
-from sklearn.metrics import accuracy_score, f1_score
 
+def Train(healthy_dir, disease_dir, batch_size:int=3, epochs:int=10, learning_rate:float=0.1, int_channels:int=10):
+    
+    # Define loss function
+    criterion = nn.CrossEntropyLoss()
 
-train_losses = []
-val_losses = []
-train_accuracies = []
-val_accuracies = []
+    # Training parameters
+    num_epochs = 2
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
+    model = model.to(device)
 
-def training_loop(healthy_dir, disease_dir, mixed_precision="fp16", seed:int=42, batch_size:int=1, num_epochs=10, int_channels:int=10):
-    set_seed(seed)
-    # Initialize accelerator
-    accelerator = Accelerator(mixed_precision=mixed_precision)
-    device = accelerator.device
-    # Build dataloaders
-    train_dataloader, val_dataloader, test_dataloader = prepare(healthy_dir=healthy_dir,disease_dir=disease_dir,batch_size=batch_size)
+    #Define model and dataloaders
 
-    # Build model
     model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28).to(device)
+
+    train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir)
 
     optimizer = optim.Adam(model.parameters())
 
-    scheduler = optim.lr_scheduler.ConstantLR(optimizer,last_epoch=-1)
-    model,optimizer,train_dataloader,scheduler  = accelerator.prepare(model,optimizer,train_dataloader,scheduler )
+    scaler = GradScaler()
 
-    criterion = nn.CrossEntropyLoss()
+    # Lists to store metrics for plotting
+    train_losses, train_accuracies = [], []
+    val_losses, val_accuracies = [], []
+    '''
+    def calculate_accuracy(y_pred, y_true):
+        y_pred_tag = torch.round(torch.sigmoid(y_pred))
+        correct_results_sum = (y_pred_tag == y_true).sum().float()
+        acc = correct_results_sum / y_true.shape[0]
+        return acc.item()
+    '''
+    def calculate_accuracy(outputs, labels):
+        _, predicted = torch.max(outputs, 1)
+        correct = (predicted == labels).sum().item()
+        total = labels.size(0)
+        return correct / total
 
-    for epoch in range(num_epochs):
-        model.train()  # Set the model to training mode
+    def train_epoch(model, dataloader, optimizer, criterion, device):
+        model.train()
         running_loss = 0.0
-        total_correct = 0
-        total_samples = 0
-
-        # Training loop
-        for inputs, labels in train_dataloader:
+        running_acc = 0.0
+        
+        pbar = tqdm(enumerate(dataloader), total=len(dataloader), desc="Training")
+        for i, (inputs, labels) in pbar:
+            labels = labels.to(torch.long)
+            inputs, labels = inputs.to(device), labels.to(device)
+            
             optimizer.zero_grad()
             outputs = model(inputs)
-            outputs = outputs.logits
-            loss = criterion(outputs, labels)
-            accelerator.backward(loss)
-            optimizer.step()
-
+            loss = criterion(outputs.squeeze(), labels)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+            
             running_loss += loss.item()
+            running_acc += calculate_accuracy(outputs.squeeze(), labels)
+            
+            pbar.set_postfix({'loss': running_loss / (i+1), 'acc': running_acc / (i+1)})
+        
+        epoch_loss = running_loss / len(dataloader)
+        epoch_acc = running_acc / len(dataloader)
+        return epoch_loss, epoch_acc
 
-            # Calculate training accuracy
-            _, predicted = torch.max(outputs, 1)
-            total_samples += labels.size(0)
-            total_correct += (predicted == labels).sum().item()
-
-        average_loss = running_loss / len(train_dataloader)
-        training_accuracy = total_correct / total_samples
-        train_losses.append(average_loss)
-        train_accuracies.append(training_accuracy)
-
-        accelerator.print(f"Epoch {epoch + 1}/{num_epochs}, Training Loss: {average_loss:.4f}, Training Accuracy: {training_accuracy:.4f}")
-
-        # Validation loop
-        model.eval()  # Set the model to evaluation mode
-        val_correct = 0
-        val_total = 0
-        val_running_loss = 0.0
-
+    def validate_epoch(model, dataloader, criterion, device):
+        model.eval()
+        running_loss = 0.0
+        running_acc = 0.0
+        
         with torch.no_grad():
-            for inputs, labels in val_dataloader:
-                inputs, labels = inputs.to(accelerator.device), labels.to(accelerator.device)
+            for inputs, labels in dataloader:
+                labels = labels.to(torch.long)
+                inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
-                outputs = outputs.logits
-                loss = criterion(outputs, labels)
-                _, predicted = torch.max(outputs, 1)
-                predicted = predicted.to(accelerator.device)
-                val_total += labels.size(0)
-                val_correct += (predicted == labels).sum().item()
+                loss = criterion(outputs.squeeze(), labels)
+                
+                running_loss += loss.item()
+                running_acc += calculate_accuracy(outputs.squeeze(), labels)
+        
+        epoch_loss = running_loss / len(dataloader)
+        epoch_acc = running_acc / len(dataloader)
+        return epoch_loss, epoch_acc
 
-                val_running_loss += loss.item()
+    # Training loop
+    for epoch in range(num_epochs):
+        print(f"\nEpoch {epoch+1}/{num_epochs}")
+        
+        train_loss, train_acc = train_epoch(model, train_loader, optimizer, criterion, device)
+        val_loss, val_acc = validate_epoch(model, val_loader, criterion, device)
+        
+        train_losses.append(train_loss)
+        train_accuracies.append(train_acc)
+        val_losses.append(val_loss)
+        val_accuracies.append(val_acc)
+        
+        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
+        print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
-        average_val_loss = val_running_loss / len(val_dataloader)
-        val_accuracy = val_correct / val_total
-        accelerator.print(f"Validation Loss: {average_val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
-        val_losses.append(average_val_loss)
-        val_accuracies.append(val_accuracy)
-    
+    # Test the model
     model.eval()
-    all_preds = []
-    all_labels = []
+    test_preds, test_labels = [], []
     with torch.no_grad():
-        for inputs, labels in test_dataloader:
-            outputs = model(inputs).squeeze()
-            preds = (outputs > 0.5).float()
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)  # Get the index of the max log-probability
+            test_preds.extend(preds.cpu().numpy())
+            test_labels.extend(labels.cpu().numpy())
 
-    test_accuracy = accuracy_score(all_labels, all_preds)
-    test_f1_score = f1_score(all_labels, all_preds)
-    print(f"Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1_score:.4f}")
-    print("Training complete!")
+    test_preds = np.array(test_preds)
+    test_labels = np.array(test_labels)
 
+    # Calculate accuracy
+    test_acc = accuracy_score(test_labels, test_preds)
 
-    # Plot the training and validation losses
-    plt.figure(figsize=(10, 5))
-    plt.plot(train_losses, label='Train Loss')
-    plt.plot(val_losses, label='Validation Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.title('Training and Validation Losses')
-    plt.savefig('losses.png')
+    # Calculate F1 score (you can choose 'micro', 'macro', or 'weighted' average)
+    test_f1 = f1_score(test_labels, test_preds, average='weighted')
 
-    # Plot the training and validation accuracies
-    plt.figure(figsize=(10, 5))
+    print(f"\nTest Accuracy: {test_acc:.4f}")
+    print(f"Test F1 Score (weighted): {test_f1:.4f}")
+
+    # Plotting
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
     plt.plot(train_accuracies, label='Train Accuracy')
     plt.plot(val_accuracies, label='Validation Accuracy')
-    plt.xlabel('Epoch')
+    plt.title('Accuracy vs Epochs')
+    plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.title('Training and Validation Accuracies')
-    plt.savefig('accuracies.png')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(val_losses, label='Validation Loss')
+    plt.title('Loss vs Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
 
     # Save the model
-    torch.save(model.state_dict(), 'model.pth')
-
-    # Save metrics
-    with open('metrics.txt', 'w') as f:
-        f.write(f"Test Accuracy: {test_accuracy:.4f}\n")
-        f.write(f"Test F1 Score: {test_f1_score:.4f}\n")
+    torch.save(model.state_dict(), 'binary_classification_model.pth')
+    print("Model saved successfully.")
