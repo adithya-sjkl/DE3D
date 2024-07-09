@@ -6,6 +6,7 @@ from torch.functional import Tensor
 import typing
 import einops
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 feat_ext = timm.create_model(
     'tf_efficientnet_b0.ns_jft_in1k',
@@ -38,8 +39,8 @@ class ConvLSTMCell(nn.Module):
         if the last dim in c not equal to a then a has been halved
         """
         c, h = state
-        #h = h.to(device=x.device)
-        #c = c.to(device=x.device)
+        h = h.to(device=x.device)
+        c = c.to(device=x.device)
         x = torch.cat([x, h], dim=1)
         x = self.conv_x(x)
         a, b, g, d = torch.split(x, self.intermediate_channels, dim=1)
