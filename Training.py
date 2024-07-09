@@ -24,10 +24,8 @@ def Train(healthy_dir, disease_dir, batch_size:int=3, epochs:int=10, learning_ra
     num_epochs = 2
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
-    model = model.to(device)
 
     #Define model and dataloaders
-
     model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28).to(device)
 
     train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir)
