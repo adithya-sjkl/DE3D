@@ -17,6 +17,22 @@ feat_ext = timm.create_model(
     in_chans = 1
 )
 
+class features_2D(nn.Module):
+    def __init__ (self, channels, batch_size):
+        super(features_2D, self).__init__()
+        self.feat_ext = feat_ext
+        self.channels = channels
+        self.batch_size = batch_size
+        self.channel_red = nn.Conv2d(in_channels=1280,out_channels=channels,kernel_size=1)
+        
+    def forward(self, x:Tensor):
+        x = einops.rearrange(x, 'b c h w l -> (b h) c w l')   # we concat the images in the batch along the height
+        x = self.feat_ext(x)                           #we choose the layer from which we extract features
+        x = self.channel_red(x)                           #1x1 convs help reduce the number of channels by mixing
+        x = einops.rearrange(x, '(b h) c w l -> b h c w l', b=self.batch_size) #reverse the first step
+
+        return x
+    
 #print('EffB0 trainable parameters in millions:',sum(p.numel() for p in feat_ext.parameters() if p.requires_grad)/1000000)
 
 #print([y.shape for y in feat_ext(x)])
@@ -55,35 +71,19 @@ class ConvLSTMCell(nn.Module):
 
 
 
-class features_2D(nn.Module):
-    def __init__ (self, channels, batch_size):
-        super(features_2D, self).__init__()
-        self.feat_ext = feat_ext
+class DE3D(nn.Module):
+    def __init__(self, channels:int, batch_size:int, feat_res:int=28):
+        super(DE3D, self).__init__()
         self.channels = channels
         self.batch_size = batch_size
-        self.channel_red = nn.Conv2d(in_channels=40,out_channels=channels,kernel_size=1)
-        
-    def forward(self, x:Tensor):
-        x = einops.rearrange(x, 'b c h w l -> (b h) c w l')   # we concat the images in the batch along the height
-        #x = torch.unsqueeze(x, dim=1)                     #efficientnet (grayscale) needs a channel dimension of size 1
-        x = self.feat_ext(x)[2]                           #we choose the layer from which we extract features
-        x = self.channel_red(x)                           #1x1 convs help reduce the number of channels by mixing
-        x = einops.rearrange(x, '(b h) c w l -> b h c w l', b=self.batch_size) #reverse the first step
-
-        return x
-
-
-class feat_2D_convlstm(nn.Module):
-    def __init__(self, channels:int, batch_size:int, c:Tensor, h:Tensor):
-        super(feat_2D_convlstm, self).__init__()
-        self.channels = channels
-        self.batch_size = batch_size
-        self.c = c
-        self.h = h
+        self.c = torch.zeros(batch_size,channels,feat_res,feat_res)
+        self.h = torch.zeros(batch_size,channels,feat_res,feat_res)
         self.features_2D = features_2D(channels=channels,batch_size=batch_size)
         self.convlstm = ConvLSTMCell(intermediate_channels=channels)
         self.fconv1 = nn.Conv2d(in_channels=channels,out_channels=4,kernel_size=5)
         self.fconv2 = nn.Conv2d(in_channels=4,out_channels=1,kernel_size=5)
+        self.fc1 = nn.Linear(in_features=400,out_features=50)
+        self.fc2 = nn.Linear(in_features=50,out_features=2)
 
     def forward(self, x:Tensor):
         x = self.features_2D(x)
@@ -99,9 +99,11 @@ class feat_2D_convlstm(nn.Module):
         x = self.fconv1(h)
         x = self.fconv2(x)
         x = einops.rearrange(x,'b c w l -> b (c w l)')
+        x = self.fc1(x)
+        x = self.fc2(x)
         return x
 
-
+'''
 class DE3D(nn.Module):
     def __init__(self, channels:int, batch_size:int, feat_res:int=28):
         super(DE3D, self).__init__()
@@ -129,7 +131,7 @@ class DE3D(nn.Module):
         out = self.fully_connected(out)
 
         return out
-
+'''
 
 
 
