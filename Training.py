@@ -7,15 +7,11 @@ from sklearn.metrics import accuracy_score,f1_score
 import numpy as np
 from torchvision.models import resnet18
 from torch import optim
-from torch.utils.data import Dataset, DataLoader
-from torchvision.datasets import ImageFolder
-from torchvision import transforms
-import PIL
 from torch.cuda.amp import GradScaler
-from Efficient3DModel import DE3D
+from Model import E3D
 from Preprocessing import prepare
 
-def Train(healthy_dir, disease_dir, batch_size:int=3, epochs:int=10, learning_rate:float=0.1, int_channels:int=10):
+def Train(healthy_dir, disease_dir, batch_size:int=3, num_epochs:int=10, lr:float=0.001, num_slices:int=7, rmin:float, rmax:float, dropout:float=0.5):
     
     # Define loss function
     criterion = nn.CrossEntropyLoss()
@@ -26,11 +22,11 @@ def Train(healthy_dir, disease_dir, batch_size:int=3, epochs:int=10, learning_ra
     print(device)
 
     #Define model and dataloaders
-    model = DE3D(channels=int_channels,batch_size=batch_size,feat_res=28).to(device)
+    model = E3D(batch_size=batch_size, num_slices=num_slices, rmin=rmin, rmax=rmax, dropout=dropout).to(device)
 
     train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir)
 
-    optimizer = optim.Adam(model.parameters())
+    optimizer = optim.Adam(model.parameters(),lr=lr)
 
     scaler = GradScaler()
 
@@ -157,3 +153,17 @@ def Train(healthy_dir, disease_dir, batch_size:int=3, epochs:int=10, learning_ra
     # Save the model
     torch.save(model.state_dict(), 'binary_classification_model.pth')
     print("Model saved successfully.")
+
+healthy_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/NC"
+disease_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/AD"
+
+#Hyperparameters
+batch_size=3
+num_epochs=10
+lr=0.001
+num_slices=7
+rmin=0.5
+rmax=0.99
+dropout=0.5
+
+Train(healthy_dir, disease_dir, batch_size, num_epochs, lr, num_slices, rmin, rmax, dropout)
