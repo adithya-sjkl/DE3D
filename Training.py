@@ -165,5 +165,5 @@ num_slices=7
 rmin=0.5
 rmax=0.99
 dropout=0.5
-
+ 
 Train(healthy_dir, disease_dir, batch_size, num_epochs, lr, num_slices, rmin, rmax, dropout)
