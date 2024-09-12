@@ -11,7 +11,7 @@ from torch.cuda.amp import GradScaler
 from Model import E3D
 from Preprocessing import prepare
 
-def Train(healthy_dir, disease_dir, batch_size:int=3, num_epochs:int=10, lr:float=0.001, num_slices:int=7, rmin:float, rmax:float, dropout:float=0.5):
+def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, num_epochs:int=10, lr:float=0.001, num_slices:int=7, dropout:float=0.5):
     
     # Define loss function
     criterion = nn.CrossEntropyLoss()
@@ -158,12 +158,12 @@ healthy_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/NC"
 disease_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/AD"
 
 #Hyperparameters
+rmin=0.5
+rmax=0.99
 batch_size=3
 num_epochs=10
 lr=0.001
 num_slices=7
-rmin=0.5
-rmax=0.99
 dropout=0.5
  
-Train(healthy_dir, disease_dir, batch_size, num_epochs, lr, num_slices, rmin, rmax, dropout)
+Train(healthy_dir, disease_dir, rmin, rmax, batch_size, num_epochs, lr, num_slices, dropout)
