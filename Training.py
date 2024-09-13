@@ -157,6 +157,7 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
 healthy_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/NC"
 disease_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/AD"
 
+'''
 #Hyperparameters
 rmin=0.5
 rmax=0.99
@@ -167,3 +168,5 @@ num_slices=7
 dropout=0.5
  
 Train(healthy_dir, disease_dir, rmin, rmax, batch_size, num_epochs, lr, num_slices, dropout)
+
+'''
