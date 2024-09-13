@@ -154,10 +154,12 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
     torch.save(model.state_dict(), 'binary_classification_model.pth')
     print("Model saved successfully.")
 
+
+''' 
 healthy_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/NC"
 disease_dir = "/Users/adithyasjith/Documents/Code/DE3D/Data/AD"
 
-'''
+
 #Hyperparameters
 rmin=0.5
 rmax=0.99
