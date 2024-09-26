@@ -3,7 +3,9 @@ import numpy as np
 import einops
 import torch.nn as nn
 import timm
+import math
 
+print('change test')
 def parallel_scan(arr:torch.Tensor, op):
     """
     Implements the Hillis-Steele parallel scan algorithm.
@@ -48,11 +50,11 @@ class ImageLRU(torch.nn.Module):
         self.num_slices = num_slices
         self.rmin = rmin
         self.rmax = rmax
-        self.u1 = torch.rand(num_slices)
-        self.u2 = torch.rand(num_slices)
+        self.u1 = torch.rand(num_slices).to(device)
+        self.u2 = torch.rand(num_slices).to(device)
         self.theta = nn.Parameter(2*np.pi*self.u2)
         self.nu_log = nn.Parameter(torch.log(-0.5*torch.log(self.u1*(self.rmax**2-self.rmin**2)+self.rmin**2)))
-        self.Lambda = torch.complex(torch.exp(-torch.exp(self.nu_log)) , self.theta)
+        self.Lambda = torch.complex(torch.exp(-torch.exp(self.nu_log)) , self.theta).to(device)
         self.B = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
         self.C = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
         self.op = BinaryOperation(self.Lambda, self.B)
