@@ -12,6 +12,7 @@ from Model import E3D
 from Preprocessing import prepare
 
 def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, num_epochs:int=10, lr:float=0.001, num_slices:int=7, dropout:float=0.5):
+    print('change test')
     
     # Define loss function
     criterion = nn.CrossEntropyLoss()

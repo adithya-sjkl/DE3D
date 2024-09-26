@@ -5,7 +5,7 @@ import torch.nn as nn
 import timm
 import math
 
-print('change test')
+
 def parallel_scan(arr:torch.Tensor, op):
     """
     Implements the Hillis-Steele parallel scan algorithm.
