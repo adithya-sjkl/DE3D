@@ -5,7 +5,7 @@ import torch.nn as nn
 import timm
 import math
 
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def parallel_scan(arr:torch.Tensor, op):
     """
     Implements the Hillis-Steele parallel scan algorithm.
