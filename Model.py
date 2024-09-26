@@ -61,9 +61,9 @@ class ImageLRU(torch.nn.Module):
         self.op = BinaryOperation(self.Lambda, self.B)
 
     def forward(self, x:torch.Tensor):
-        x = x.to(torch.complex64)
         img_array = einops.rearrange(x,'b c h w (n l) -> b c h w n l',l=self.num_slices)
-        out = parallel_scan(img_array, self.op)
+        complex_array = img_array.to(torch.complex64)
+        out = parallel_scan(complex_array, self.op)
         out = torch.real(torch.einsum('kl,bchwnl->bchwnk',self.C,out)) + torch.einsum('kl,bchwnl->bchwnk',self.D,img_array)
         return out
 
