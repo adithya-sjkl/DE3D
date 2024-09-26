@@ -72,8 +72,6 @@ feat_ext = timm.create_model(
     'tf_efficientnet_b0.ns_jft_in1k',
     #'resnet18',
     pretrained=True,
-    features_only=True,
-    #out_indices = [1,2,3,4],
     in_chans = 1
 )
 
