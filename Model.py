@@ -57,12 +57,14 @@ class ImageLRU(torch.nn.Module):
         self.Lambda = torch.complex(torch.exp(-torch.exp(self.nu_log)) , self.theta).to(device)
         self.B = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
         self.C = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
+        self.D = nn.Parameter(torch.randn(self.num_slices, self.num_slices))
         self.op = BinaryOperation(self.Lambda, self.B)
 
     def forward(self, x:torch.Tensor):
         x = x.to(torch.complex64)
         img_array = einops.rearrange(x,'b c h w (n l) -> b c h w n l',l=self.num_slices)
         out = parallel_scan(img_array, self.op)
+        out = torch.real(torch.einsum('kl,bchwnl->bchwnk',self.C,out)) + torch.einsum('kl,bchwnl->bchwnk',self.D,img_array)
         return out
 
 
