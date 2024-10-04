@@ -96,7 +96,7 @@ class E3D(nn.Module):
         self.features2d = features_2D(batch_size=batch_size)
         self.fc1 = nn.Linear(in_features=7000,out_features=2000)
         self.fc2 = nn.Linear(in_features=2000,out_features=500)
-        self.fc3 = nn.Linear(in_features=500,out_features=1)
+        self.fc3 = nn.Linear(in_features=500,out_features=2)
         self.do = nn.Dropout(dropout)
     def forward(self,x:torch.Tensor):
         x = self.imagelru(x)
