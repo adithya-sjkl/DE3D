@@ -17,7 +17,7 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
     criterion = nn.CrossEntropyLoss()
 
     # Training parameters
-    num_epochs = 2
+    num_epochs = num_epochs
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
@@ -57,12 +57,12 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
             
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs.squeeze(), labels)
+            loss = criterion(outputs, labels)
             loss.backward(retain_graph=True)
             optimizer.step()
             
             running_loss = running_loss+loss.item()
-            running_acc = running_acc+calculate_accuracy(outputs.squeeze(), labels)
+            running_acc = running_acc+calculate_accuracy(outputs, labels)
             
             pbar.set_postfix({'loss': running_loss / (i+1), 'acc': running_acc / (i+1)})
         
