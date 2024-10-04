@@ -7,7 +7,6 @@ from sklearn.metrics import accuracy_score,f1_score
 import numpy as np
 from torchvision.models import resnet18
 from torch import optim
-from torch.cuda.amp import GradScaler
 from Model import E3D
 from Preprocessing import prepare
 
@@ -28,8 +27,6 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
     train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir, batch_size=batch_size)
 
     optimizer = optim.Adam(model.parameters(),lr=lr)
-
-    scaler = GradScaler()
 
     # Lists to store metrics for plotting
     train_losses, train_accuracies = [], []
@@ -60,9 +57,8 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs.squeeze(), labels)
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            loss.backward()
+            optimizer.step()
             
             running_loss += loss.item()
             running_acc += calculate_accuracy(outputs.squeeze(), labels)
