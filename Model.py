@@ -26,9 +26,9 @@ def parallel_scan(arr:torch.Tensor, op):
         
         # Simulate parallel operations
         temp = torch.clone(output)
-        new_output = torch.clone(output)
-        new_output[:,:,:,:,step:,:] = op(temp[:,:,:,:,:n-step,:], temp[:,:,:,:,step:,:])
-        output = new_output
+
+        output[:,:,:,:,step:,:] = op(temp[:,:,:,:,:n-step,:], temp[:,:,:,:,step:,:])
+    
     return output
 
 class BinaryOperation(torch.nn.Module):
