@@ -54,7 +54,7 @@ class ImageLRU(torch.nn.Module):
         self.u2 = torch.rand(num_slices).to(device)
         self.theta = nn.Parameter(2*np.pi*self.u2)
         self.nu_log = nn.Parameter(torch.log(-0.5*torch.log(self.u1*(self.rmax**2-self.rmin**2)+self.rmin**2)))
-        self.Lambda = torch.complex(torch.exp(-torch.exp(self.nu_log)) , self.theta).to(device)
+        self.Lambda = nn.Parameter(torch.complex(torch.exp(-torch.exp(self.nu_log)) , self.theta))
         self.B = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
         self.C = nn.Parameter(torch.randn(self.num_slices, self.num_slices, dtype=torch.complex64))
         self.D = nn.Parameter(torch.randn(self.num_slices, self.num_slices))
