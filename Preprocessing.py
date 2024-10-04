@@ -58,7 +58,7 @@ class NiftiClassificationDataset(Dataset):
         return image, label
 
 
-def prepare(healthy_dir,disease_dir, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=200, spatial_size=[224,224,224], batch_size=1):
+def prepare(healthy_dir,disease_dir, batch_size, pixdim=(1.5, 1.5, 1.0), a_min=-200, a_max=200, spatial_size=[224,224,224]):
     """
     This function is for preprocessing, it contains only the basic transforms, but you can add more operations that you
     find in the Monai documentation.
