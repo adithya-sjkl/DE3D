@@ -99,16 +99,16 @@ class E3D(nn.Module):
         self.fc3 = nn.Linear(in_features=500,out_features=2)
         self.do = nn.Dropout(dropout)
     def forward(self,x:torch.Tensor):
-        x1 = self.imagelru(x)
-        x2 = einops.rearrange(x1, 'b c h w n l -> b c h w (n l)')
-        x3 = self.imagelru(x2)
-        x4 = x3[:,:,:,:,-1,:]
-        x5 = einops.rearrange(x4, 'b c h w l -> b c l h w')
-        x6 = self.features2d(x5)
-        x7 = self.fc1(x6)
-        x8 = self.do(x7)
-        x9 = self.fc2(x8)
-        x10 = self.do(x9)
-        x11 = self.fc3(x10)
+        x = self.imagelru(x)
+        x = einops.rearrange(x, 'b c h w n l -> b c h w (n l)')
+        x = self.imagelru(x)
+        x = x[:,:,:,:,-1,:]
+        x = einops.rearrange(x, 'b c h w l -> b c l h w')
+        x = self.features2d(x)
+        x = self.fc1(x)
+        x = self.do(x)
+        x = self.fc2(x)
+        x = self.do(x)
+        x = self.fc3(x)
 
-        return x11
+        return x
