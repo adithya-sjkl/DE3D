@@ -80,10 +80,10 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
                 labels = labels.to(torch.long)
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
-                loss = criterion(outputs.squeeze(), labels)
+                loss = criterion(outputs, labels)
                 
                 running_loss += loss.item()
-                running_acc += calculate_accuracy(outputs.squeeze(), labels)
+                running_acc += calculate_accuracy(outputs, labels)
         
         epoch_loss = running_loss / len(dataloader)
         epoch_acc = running_acc / len(dataloader)
