@@ -45,6 +45,7 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
         return correct / total
 
     def train_epoch(model, dataloader, optimizer, criterion, device):
+        torch.autograd.set_detect_anomaly(True)
         model.train()
         running_loss = 0.0
         running_acc = 0.0
