@@ -61,8 +61,8 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
             loss.backward(retain_graph=True)
             optimizer.step()
             
-            running_loss += loss.item()
-            running_acc += calculate_accuracy(outputs.squeeze(), labels)
+            running_loss = running_loss+loss.item()
+            running_acc = running_acc+calculate_accuracy(outputs.squeeze(), labels)
             
             pbar.set_postfix({'loss': running_loss / (i+1), 'acc': running_acc / (i+1)})
         
