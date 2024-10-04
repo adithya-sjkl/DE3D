@@ -57,7 +57,7 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs.squeeze(), labels)
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
             
             running_loss += loss.item()
