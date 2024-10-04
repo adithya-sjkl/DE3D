@@ -25,7 +25,7 @@ def Train(healthy_dir, disease_dir, rmin:float, rmax:float, batch_size:int=3, nu
     #Define model and dataloaders
     model = E3D(batch_size=batch_size, num_slices=num_slices, rmin=rmin, rmax=rmax, dropout=dropout).to(device)
 
-    train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir)
+    train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir, batch_size=batch_size)
 
     optimizer = optim.Adam(model.parameters(),lr=lr)
 
