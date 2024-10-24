@@ -85,11 +85,11 @@ def prepare(healthy_dir,disease_dir, batch_size, pixdim=(1.5, 1.5, 1.0), a_min=-
 
     dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms, seed=42)
 
-    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.6,0.2,0.2])
+    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.8,0.1,0.1])
 
     # Create DataLoader instances
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)
-    test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=8, drop_last=True)
+    test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=8, drop_last=True)
 
     return train_loader, val_loader, test_loader
