@@ -85,7 +85,7 @@ def prepare(healthy_dir,disease_dir, batch_size, pixdim=(1.5, 1.5, 1.0), a_min=-
 
     dataset = NiftiClassificationDataset(image_folder_disease=disease_dir, image_folder_healthy=healthy_dir, transform=train_transforms, seed=42)
 
-    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.8,0.1,0.1])
+    train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.6,0.2,0.2])
 
     # Create DataLoader instances
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
