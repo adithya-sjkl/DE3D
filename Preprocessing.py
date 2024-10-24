@@ -88,8 +88,8 @@ def prepare(healthy_dir,disease_dir, batch_size, pixdim=(1.5, 1.5, 1.0), a_min=-
     train_dataset,val_dataset,test_dataset = monai.data.utils.partition_dataset(dataset, ratios=[0.6,0.2,0.2])
 
     # Create DataLoader instances
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
-    test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)
+    test_loader =  DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)
 
     return train_loader, val_loader, test_loader
