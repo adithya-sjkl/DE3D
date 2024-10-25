@@ -77,7 +77,7 @@ def prepare(healthy_dir,disease_dir, batch_size, pixdim=(1.5, 1.5, 1.0), a_min=-
             #CropForeground(),
             Resize(spatial_size=spatial_size),
             #RandFlip(spatial_axis=0, prob=0.5),
-            RandRotate(range_x=15, range_y=15, range_z=15, prob=0.5),
+            #RandRotate(range_x=15, range_y=15, range_z=15, prob=0.5),
             ToTensor(),
 
         ]
