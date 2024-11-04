@@ -69,7 +69,7 @@ class ImageLRU(torch.nn.Module):
 
 
 feat_ext = timm.create_model(
-    'tf_efficientnet_b4.ns_jft_in1k',
+    'tf_efficientnet_b0.ns_jft_in1k',
     #'resnet18',
     pretrained=True,
     in_chans = 1
@@ -94,9 +94,10 @@ class E3D(nn.Module):
         super(E3D,self).__init__()
         self.imagelru = ImageLRU(num_slices=num_slices, rmin=rmin, rmax=rmax)
         self.features2d = features_2D(batch_size=batch_size)
-        self.fc1 = nn.Linear(in_features=7000,out_features=2000)
-        self.fc2 = nn.Linear(in_features=2000,out_features=500)
-        self.fc3 = nn.Linear(in_features=500,out_features=2)
+        self.fc1 = nn.Linear(in_features=7000,out_features=5000)
+        self.fc2 = nn.Linear(in_features=5000,out_features=1000)
+        self.fc3 = nn.Linear(in_features=1000,out_features=200)
+        self.fc4 = nn.Linear(in_features=200,out_features=2)
         self.do = nn.Dropout(dropout, inplace=False)
         self.relu = nn.ReLU()
     def forward(self,x:torch.Tensor):
@@ -113,5 +114,8 @@ class E3D(nn.Module):
         x = self.relu(x)
         x = self.do(x)
         x = self.fc3(x)
+        x = self.relu(x)
+        x = self.do(x)
+        x = self.fc4(x)
 
         return x
