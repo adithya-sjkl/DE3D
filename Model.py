@@ -69,7 +69,7 @@ class ImageLRU(torch.nn.Module):
 
 
 feat_ext = timm.create_model(
-    'tf_efficientnet_b0.ns_jft_in1k',
+    'tf_efficientnet_b4.ns_jft_in1k',
     #'resnet18',
     pretrained=True,
     in_chans = 1
