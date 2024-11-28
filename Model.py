@@ -94,9 +94,9 @@ class E3D(nn.Module):
         super(E3D,self).__init__()
         self.imagelru = ImageLRU(num_slices=num_slices, rmin=rmin, rmax=rmax)
         self.features2d = features_2D(batch_size=batch_size)
-        self.fc1 = nn.Linear(in_features=7000,out_features=2000)
-        self.fc2 = nn.Linear(in_features=2000,out_features=200)
-        self.fc3 = nn.Linear(in_features=200,out_features=2)
+        self.fc1 = nn.Linear(in_features=7000,out_features=500)
+        self.fc2 = nn.Linear(in_features=500,out_features=2)
+        #self.fc3 = nn.Linear(in_features=200,out_features=2)
         self.do = nn.Dropout(dropout, inplace=False)
         self.relu = nn.ReLU()
     def forward(self,x:torch.Tensor):
@@ -110,8 +110,8 @@ class E3D(nn.Module):
         x = self.relu(x)
         x = self.do(x)
         x = self.fc2(x)
-        x = self.relu(x)
-        x = self.do(x)
-        x = self.fc3(x)
+        #x = self.relu(x)
+        #x = self.do(x)
+        #x = self.fc3(x)
 
         return x
