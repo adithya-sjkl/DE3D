@@ -10,7 +10,7 @@ from torch import optim
 from Model import E3D
 from Preprocessing import prepare
 
-def Train(healthy_dir, disease_dir, batch_size, rmin:float, rmax:float, num_epochs:int=10, lr:float=0.001, num_slices:int=7, dropout:float=0.5):
+def Train(healthy_dir, disease_dir, batch_size, rmin:float, rmax:float, num_epochs:int=10, lr:float=0.001, num_slices:int=7, dropout:float=0.5, weight_decay:float=0.01):
     print('change test')
 
     # Define loss function
@@ -26,7 +26,7 @@ def Train(healthy_dir, disease_dir, batch_size, rmin:float, rmax:float, num_epoc
 
     train_loader, val_loader, test_loader = prepare(healthy_dir, disease_dir, batch_size=batch_size)
 
-    optimizer = optim.Adam(model.parameters(),lr=lr)
+    optimizer = optim.AdamW(model.parameters(),lr=lr,weight_decay=weight_decay)
 
     # Lists to store metrics for plotting
     train_losses, train_accuracies = [], []
